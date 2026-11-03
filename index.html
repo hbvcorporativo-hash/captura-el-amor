@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Captura el Amor · Karen &amp; Rafael</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&amp;family=Lora:ital,wght@0,400;0,600;1,400&amp;family=Oswald:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Una columna angosta como el letrero impreso; flores en las esquinas de arriba y abajo; la acción principal dentro de un marco con esquinas, igual que el QR */
+  --paper:#ffffff;
+  --ink:#151515;
+  --muted:#5c5c5c;
+  --line:#dadada;
+  --soft:#f7f2f1;
+  --ok:#2e7a4c;
+  --bad:#b3413b;
+  --f-script:"Great Vibes", "Brush Script MT", cursive;
+  --f-body:"Lora", Georgia, "Times New Roman", serif;
+  --f-caps:"Oswald", "Arial Narrow", Arial, sans-serif;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font-family:var(--f-body);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden}
+.flores{position:absolute;left:0;width:100%;pointer-events:none;z-index:0}
+#floresArriba{top:0;height:230px}
+#floresAbajo{bottom:0;height:200px}
+.wrap{position:relative;z-index:1;max-width:460px;margin:0 auto;padding:96px 20px 150px;display:flex;flex-direction:column;gap:22px}
+
+header{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px}
+header svg{width:66px;height:auto;color:var(--ink)}
+h1{font-family:var(--f-script);font-weight:400;font-size:62px;line-height:1.02;margin:4px 0 0;text-wrap:balance}
+.couple{font-family:var(--f-caps);font-weight:600;letter-spacing:.09em;text-transform:uppercase;font-size:18px;margin:6px 0 0}
+.intro{text-align:center;margin:0;color:var(--muted);text-wrap:balance}
+
+.frame{position:relative;padding:26px 20px;display:flex;flex-direction:column;gap:12px;background:rgba(255,255,255,.92)}
+.k{position:absolute;width:26px;height:26px;border-color:var(--ink);border-style:solid;border-width:0}
+.k.tl{top:0;left:0;border-top-width:3px;border-left-width:3px}
+.k.tr{top:0;right:0;border-top-width:3px;border-right-width:3px}
+.k.bl{bottom:0;left:0;border-bottom-width:3px;border-left-width:3px}
+.k.br{bottom:0;right:0;border-bottom-width:3px;border-right-width:3px}
+
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:14px;color:var(--muted)}
+.field input{font:inherit;font-size:17px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+.field input:focus-visible{outline:2px solid var(--ink);outline-offset:1px;border-color:var(--ink)}
+
+.btn{font-family:var(--f-caps);font-weight:500;text-transform:uppercase;letter-spacing:.07em;font-size:18px;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px 18px;border-radius:12px;cursor:pointer;border:2px solid var(--ink);-webkit-tap-highlight-color:transparent}
+.btn svg{width:22px;height:22px;flex:none}
+.btn-main{background:var(--ink);color:var(--paper);padding:19px 18px;font-size:20px}
+.btn-main:active{transform:scale(.985)}
+.btn-alt{background:var(--paper);color:var(--ink);font-size:16px}
+.btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.hidden-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+.status{min-height:1.5em;text-align:center;margin:0;font-size:15px;font-weight:600;color:var(--muted)}
+.status.ok{color:var(--ok)}
+.status.bad{color:var(--bad)}
+
+.gallery{display:flex;flex-direction:column;gap:12px}
+.gallery-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.gallery-head h2{font-family:var(--f-caps);font-weight:500;text-transform:uppercase;letter-spacing:.08em;font-size:16px;margin:0}
+.count{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.empty{margin:0;padding:22px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;font-style:italic;background:rgba(255,255,255,.9)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{position:relative;margin:0;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--soft);padding:0;border:0;display:block;width:100%}
+.tile img{width:100%;height:100%;object-fit:cover;display:block}
+.tile.uploading img,.tile.failed img{opacity:.5}
+.bar{position:absolute;left:8px;right:8px;bottom:8px;height:6px;border-radius:3px;background:rgba(255,255,255,.85);overflow:hidden}
+.bar span{display:block;height:100%;width:0;background:var(--ink);transition:width .4s ease}
+.badge{position:absolute;right:6px;bottom:6px;width:24px;height:24px;border-radius:50%;display:none;align-items:center;justify-content:center}
+.badge svg{width:14px;height:14px;color:#fff}
+.tile.done .bar,.tile.failed .bar{display:none}
+.tile.done .badge{display:flex;background:var(--ok)}
+.retry{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:6px;font-family:var(--f-caps);font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--bad);background:rgba(255,255,255,.55);cursor:pointer}
+.tile.failed .retry{display:flex}
+
+footer{text-align:center;display:flex;flex-direction:column;gap:2px;padding-top:6px}
+footer p{margin:0;font-family:var(--f-caps);font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:17px;text-wrap:balance}
+footer .sig{font-weight:500;color:var(--muted);font-size:15px}
+
+@media (prefers-reduced-motion: reduce){ .btn-main:active{transform:none} .bar span{transition:none} }
+</style>
+</head>
+<body>
+<canvas class="flores" id="floresArriba" aria-hidden="true"></canvas>
+<canvas class="flores" id="floresAbajo" aria-hidden="true"></canvas>
+
+<div class="wrap">
+  <header>
+    <svg viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="12" width="58" height="33" rx="6"/>
+      <path d="M22 12l4-7h12l4 7"/>
+      <circle cx="32" cy="28.5" r="10.5"/>
+      <path d="M32 33.5c-3.6-2.6-5.4-4.4-5.4-6.5 0-1.6 1.2-2.8 2.7-2.8 1.1 0 2.1.6 2.7 1.6.6-1 1.6-1.6 2.7-1.6 1.5 0 2.7 1.2 2.7 2.8 0 2.1-1.8 3.9-5.4 6.5z" stroke-width="1.8"/>
+      <circle cx="53" cy="20" r="2"/>
+    </svg>
+    <h1>Captura el Amor</h1>
+    <p class="couple">Karen &amp; Rafael</p>
+  </header>
+
+  <p class="intro">Ayúdanos a guardar los mejores recuerdos de este día. Toma muchas fotos y súbelas aquí.</p>
+
+  <section class="frame" aria-label="Tomar o subir fotos">
+    <span class="k tl"></span><span class="k tr"></span><span class="k bl"></span><span class="k br"></span>
+
+    <div class="field">
+      <label for="nombre">Tu nombre (opcional)</label>
+      <input id="nombre" type="text" autocomplete="given-name" maxlength="40" placeholder="Ej.: Tía Marta">
+    </div>
+
+    <button class="btn btn-main" id="btnCam" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H7l1.6-2.4h6.8L17 6h1.5A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="12.8" r="3.8"/></svg>
+      Tomar foto
+    </button>
+    <button class="btn btn-alt" id="btnGal" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="9.5" r="1.8"/><path d="M21 16l-5.5-5.5L6 20"/></svg>
+      Subir de mi galería
+    </button>
+
+    <input class="hidden-input" id="cam" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
+    <input class="hidden-input" id="gal" type="file" accept="image/*" multiple tabindex="-1" aria-hidden="true">
+
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="gallery" aria-label="Tus fotos">
+    <div class="gallery-head">
+      <h2>Tus fotos</h2>
+      <span class="count" id="count">0 guardadas</span>
+    </div>
+    <p class="empty" id="empty">Las fotos que tomes van a aparecer aquí.</p>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <footer>
+    <p>¡Gracias por ser parte de nuestra historia!</p>
+    <p class="sig">Karen &amp; Rafael</p>
+  </footer>
+</div>
+
+<script>
+/* Flores estilo acuarela dibujadas en canvas. Uso: drawCluster(ctx, x, y, escala, angulo, semilla) */
+function makeRng(seed){
+  var s = seed >>> 0 || 1;
+  return function(){ s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+}
+var FLORAL_PAL = {
+  blush:  {light:'#fbe5e1', mid:'#f2bdb6', deep:'#de8f8f', edge:'#c46f76'},
+  dusty:  {light:'#f4d3d2', mid:'#e0a3a6', deep:'#bd7480', edge:'#9c5664'},
+  cream:  {light:'#fffaf4', mid:'#f8e8da', deep:'#efcfb6', edge:'#c9a287'},
+  sage:   {light:'#c9d6c2', mid:'#a3b79d', deep:'#77917a', vein:'#e7eee3'},
+  euca:   {light:'#d3e0db', mid:'#a9c0b9', deep:'#7d9a94', vein:'#eef4f1'}
+};
+
+function _petalPath(len, w){
+  var p = new Path2D();
+  p.moveTo(0, 0);
+  p.bezierCurveTo(w*0.5, -len*0.08, w*0.66, -len*0.68, w*0.32, -len*0.94);
+  p.quadraticCurveTo(w*0.12, -len*1.04, 0, -len*0.99);
+  p.quadraticCurveTo(-w*0.12, -len*1.04, -w*0.32, -len*0.94);
+  p.bezierCurveTo(-w*0.66, -len*0.68, -w*0.5, -len*0.08, 0, 0);
+  return p;
+}
+
+function _petal(ctx, a, len, w, pal, depth, unit, rnd){
+  ctx.save();
+  ctx.rotate(a);
+  var p = _petalPath(len, w);
+  var g = ctx.createLinearGradient(0, 0, 0, -len);
+  g.addColorStop(0, pal.deep);
+  g.addColorStop(0.45 - depth*0.15, pal.mid);
+  g.addColorStop(1, pal.light);
+  // halo suave (sangrado de acuarela)
+  ctx.save();
+  ctx.fillStyle = pal.mid;
+  ctx.globalAlpha = 0.12; ctx.scale(1.09, 1.05); ctx.fill(p);
+  ctx.restore();
+  // relleno
+  ctx.globalAlpha = 0.82 + depth*0.12;
+  ctx.fillStyle = g;
+  ctx.fill(p);
+  // borde más oscuro, típico de acuarela
+  ctx.globalAlpha = 0.32;
+  ctx.strokeStyle = pal.edge;
+  ctx.lineWidth = 0.9*unit;
+  ctx.stroke(p);
+  // pliegue del pétalo
+  ctx.globalAlpha = 0.18;
+  ctx.beginPath();
+  ctx.moveTo(-w*0.18, -len*0.25);
+  ctx.quadraticCurveTo(0, -len*(0.42 + rnd()*0.1), w*0.2, -len*0.24);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawRose(ctx, x, y, r, pal, rnd, unit){
+  var rings = [[7,1.0],[6,0.83],[6,0.66],[5,0.5],[5,0.36],[4,0.24]];
+  ctx.save();
+  ctx.translate(x, y);
+  // sombra suave para separar la flor del follaje
+  ctx.save();
+  var sh = ctx.createRadialGradient(r*0.04, r*0.08, r*0.6, r*0.04, r*0.08, r*1.12);
+  sh.addColorStop(0, 'rgba(120,70,75,0.22)');
+  sh.addColorStop(1, 'rgba(120,70,75,0)');
+  ctx.fillStyle = sh;
+  ctx.beginPath(); ctx.arc(r*0.04, r*0.08, r*1.12, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.rotate(rnd()*Math.PI*2);
+  for (var ri = 0; ri < rings.length; ri++){
+    var n = rings[ri][0], k = rings[ri][1];
+    var off = rnd()*Math.PI*2;
+    for (var i = 0; i < n; i++){
+      var a = off + i*Math.PI*2/n + (rnd()-0.5)*0.4;
+      var len = r*k*(0.9 + rnd()*0.18);
+      var w = len*(0.78 + rnd()*0.16);
+      _petal(ctx, a, len, w, pal, ri/(rings.length-1), unit, rnd);
+    }
+  }
+  // centro en espiral
+  ctx.globalAlpha = 0.55;
+  ctx.strokeStyle = pal.edge;
+  ctx.lineWidth = 1.1*unit;
+  ctx.lineCap = 'round';
+  for (var j = 0; j < 4; j++){
+    var rr = r*(0.05 + j*0.035);
+    var st = rnd()*Math.PI*2;
+    ctx.beginPath();
+    ctx.arc(0, 0, rr, st, st + Math.PI*(1.1 + rnd()*0.5));
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawLeaf(ctx, len, w, pal, unit, rnd){
+  var p = new Path2D();
+  p.moveTo(0, 0);
+  p.bezierCurveTo(w*0.9, -len*0.2, w*0.7, -len*0.75, 0, -len);
+  p.bezierCurveTo(-w*0.7, -len*0.75, -w*0.9, -len*0.2, 0, 0);
+  var g = ctx.createLinearGradient(-w*0.5, 0, w*0.5, -len);
+  g.addColorStop(0, pal.deep);
+  g.addColorStop(0.55, pal.mid);
+  g.addColorStop(1, pal.light);
+  ctx.save();
+  ctx.globalAlpha = 0.12; ctx.scale(1.12, 1.04);
+  ctx.fillStyle = pal.mid; ctx.fill(p);
+  ctx.restore();
+  ctx.globalAlpha = 0.86;
+  ctx.fillStyle = g; ctx.fill(p);
+  ctx.globalAlpha = 0.28;
+  ctx.strokeStyle = pal.deep; ctx.lineWidth = 0.8*unit; ctx.stroke(p);
+  ctx.globalAlpha = 0.6;
+  ctx.strokeStyle = pal.vein; ctx.lineWidth = 0.9*unit;
+  ctx.beginPath(); ctx.moveTo(0, -len*0.05); ctx.quadraticCurveTo(w*0.08, -len*0.5, 0, -len*0.92); ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+function drawSprig(ctx, x, y, a, len, pal, unit, rnd){
+  ctx.save();
+  ctx.translate(x, y); ctx.rotate(a);
+  var bend = (rnd()-0.5)*len*0.35;
+  ctx.globalAlpha = 0.7;
+  ctx.strokeStyle = pal.deep; ctx.lineWidth = 1.6*unit; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(bend, -len*0.5, 0, -len); ctx.stroke();
+  var count = 6 + Math.floor(rnd()*3);
+  for (var i = 1; i <= count; i++){
+    var t = i/(count+1);
+    var px = 2*(1-t)*t*bend, py = -len*t;
+    var side = (i % 2) ? 1 : -1;
+    var size = len*(0.3 - t*0.14)*(0.85 + rnd()*0.3);
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate(side*(0.75 + rnd()*0.25));
+    drawLeaf(ctx, size, size*0.42, pal, unit, rnd);
+    ctx.restore();
+  }
+  ctx.save(); ctx.translate(0, -len); ctx.rotate((rnd()-0.5)*0.3);
+  drawLeaf(ctx, len*0.17, len*0.07, pal, unit, rnd);
+  ctx.restore();
+  ctx.restore();
+}
+
+function drawEucalyptus(ctx, x, y, a, len, pal, unit, rnd){
+  ctx.save();
+  ctx.translate(x, y); ctx.rotate(a);
+  var bend = (rnd()-0.5)*len*0.4;
+  ctx.globalAlpha = 0.6;
+  ctx.strokeStyle = pal.deep; ctx.lineWidth = 1.3*unit; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(bend, -len*0.5, 0, -len); ctx.stroke();
+  var count = 7;
+  for (var i = 1; i <= count; i++){
+    var t = i/(count+0.6);
+    var px = 2*(1-t)*t*bend, py = -len*t;
+    var side = (i % 2) ? 1 : -1;
+    var rr = len*(0.085 - t*0.035);
+    var cx = px + side*rr*0.95, cy = py;
+    var g = ctx.createRadialGradient(cx - rr*0.3, cy - rr*0.3, rr*0.1, cx, cy, rr);
+    g.addColorStop(0, pal.light); g.addColorStop(0.7, pal.mid); g.addColorStop(1, pal.deep);
+    ctx.globalAlpha = 0.8; ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(cx, cy, rr, rr*0.88, rnd(), 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 0.25; ctx.strokeStyle = pal.deep; ctx.lineWidth = 0.7*unit; ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawBlossom(ctx, x, y, r, pal, unit, rnd){
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rnd()*6.28);
+  for (var i = 0; i < 5; i++){
+    ctx.save(); ctx.rotate(i*Math.PI*2/5);
+    var p = new Path2D();
+    p.ellipse(0, -r*0.55, r*0.38, r*0.55, 0, 0, Math.PI*2);
+    ctx.globalAlpha = 0.85; ctx.fillStyle = pal.light; ctx.fill(p);
+    ctx.globalAlpha = 0.45; ctx.strokeStyle = pal.edge; ctx.lineWidth = 0.7*unit; ctx.stroke(p);
+    ctx.restore();
+  }
+  ctx.globalAlpha = 0.9; ctx.fillStyle = pal.deep;
+  ctx.beginPath(); ctx.arc(0, 0, r*0.2, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function drawBerries(ctx, x, y, a, len, unit, rnd){
+  ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+  ctx.globalAlpha = 0.55; ctx.strokeStyle = '#8a7a6f'; ctx.lineWidth = 0.9*unit;
+  for (var i = 0; i < 5; i++){
+    var ang = (rnd()-0.5)*1.1, l = len*(0.6 + rnd()*0.4);
+    var ex = Math.sin(ang)*l, ey = -Math.cos(ang)*l;
+    ctx.globalAlpha = 0.55;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(ex*0.3, ey*0.6, ex, ey); ctx.stroke();
+    ctx.globalAlpha = 0.85; ctx.fillStyle = '#c98c8f';
+    ctx.beginPath(); ctx.arc(ex, ey, len*0.07, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+/* Un ramillete. (x,y) es el centro de las flores grandes; 'a' es la dirección hacia donde se abre el follaje. */
+function drawCluster(ctx, x, y, s, a, seed){
+  var rnd = makeRng(seed);
+  var unit = s/100;
+  ctx.save();
+  ctx.lineJoin = 'round';
+  // follaje de fondo, en abanico
+  var fan = [-1.25, -0.8, -0.35, 0.1, 0.55, 1.0, 1.4];
+  for (var i = 0; i < fan.length; i++){
+    var ang = a + fan[i] + (rnd()-0.5)*0.2;
+    var len = s*(1.15 + rnd()*0.55);
+    if (i % 3 === 1) drawEucalyptus(ctx, x, y, ang, len, FLORAL_PAL.euca, unit, rnd);
+    else drawSprig(ctx, x, y, ang, len, FLORAL_PAL.sage, unit, rnd);
+  }
+  drawBerries(ctx, x, y, a - 0.55, s*0.85, unit, rnd);
+  drawBerries(ctx, x, y, a + 0.75, s*0.75, unit, rnd);
+  // flores
+  var R = s*0.36;
+  var px = Math.cos(a - Math.PI/2), py = Math.sin(a - Math.PI/2); // eje del abanico
+  var qx = -py, qy = px;
+  drawRose(ctx, x + qx*R*0.95 + px*R*0.15, y + qy*R*0.95 + py*R*0.15, R*0.78, FLORAL_PAL.cream, rnd, unit);
+  drawRose(ctx, x - qx*R*1.0 + px*R*0.25, y - qy*R*1.0 + py*R*0.25, R*0.72, FLORAL_PAL.dusty, rnd, unit);
+  drawRose(ctx, x, y, R, FLORAL_PAL.blush, rnd, unit);
+  drawRose(ctx, x + px*R*1.25 + qx*R*0.35, y + py*R*1.25 + qy*R*0.35, R*0.48, FLORAL_PAL.blush, rnd, unit);
+  for (var b = 0; b < 4; b++){
+    var ang2 = a + (rnd()-0.5)*2.2;
+    var d = R*(1.5 + rnd()*0.5);
+    drawBlossom(ctx, x + Math.sin(ang2)*d, y - Math.cos(ang2)*d, R*0.2, FLORAL_PAL.blush, unit, rnd);
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+</script>
+<script>
+(function(){
+  /* ---------- Flores ---------- */
+  function pintarFlores(){
+    var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    var arriba = document.getElementById('floresArriba');
+    var abajo = document.getElementById('floresAbajo');
+    [arriba, abajo].forEach(function(c){
+      var w = c.clientWidth, h = c.clientHeight;
+      c.width = Math.round(w*dpr); c.height = Math.round(h*dpr);
+      var ctx = c.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      var s = Math.min(105, Math.max(80, w*0.24));
+      if (c === arriba){
+        drawCluster(ctx, 8, 6, s, Math.PI*0.72, 11);
+        drawCluster(ctx, w - 8, 6, s*0.9, -Math.PI*0.72, 19);
+      } else {
+        drawCluster(ctx, w - 6, h - 4, s*0.85, -Math.PI*0.27, 29);
+        drawCluster(ctx, 6, h - 4, s*0.7, Math.PI*0.27, 37);
+      }
+    });
+  }
+  try { pintarFlores(); } catch (e) {}
+  var ancho = window.innerWidth;
+  window.addEventListener('resize', function(){
+    if (Math.abs(window.innerWidth - ancho) > 40){ ancho = window.innerWidth; try { pintarFlores(); } catch (e) {} }
+  });
+
+  /* ---------- Fotos ---------- */
+  var cam = document.getElementById('cam');
+  var gal = document.getElementById('gal');
+  var grid = document.getElementById('grid');
+  var empty = document.getElementById('empty');
+  var countEl = document.getElementById('count');
+  var statusEl = document.getElementById('status');
+  var nameEl = document.getElementById('nombre');
+  var saved = 0, cola = [], ocupado = false;
+
+  try { nameEl.value = localStorage.getItem('captura-nombre') || ''; } catch (e) {}
+  nameEl.addEventListener('change', function(){
+    try { localStorage.setItem('captura-nombre', nameEl.value.trim()); } catch (e) {}
+  });
+
+  document.getElementById('btnCam').addEventListener('click', function(){ cam.click(); });
+  document.getElementById('btnGal').addEventListener('click', function(){ gal.click(); });
+  [cam, gal].forEach(function(input){
+    input.addEventListener('change', function(){
+      var files = Array.prototype.slice.call(input.files || []);
+      files.forEach(function(f){
+        if (!f.type || f.type.indexOf('image/') === 0) agregar(f);
+      });
+      input.value = '';
+    });
+  });
+
+  function aviso(texto, tipo){
+    statusEl.textContent = texto;
+    statusEl.className = 'status' + (tipo ? ' ' + tipo : '');
+  }
+  function actualizarConteo(){
+    countEl.textContent = saved === 1 ? '1 guardada' : saved + ' guardadas';
+  }
+
+  function agregar(file){
+    empty.hidden = true;
+    var tile = document.createElement('figure');
+    tile.className = 'tile uploading';
+    var img = new Image();
+    img.alt = 'Foto que tomaste';
+    img.src = URL.createObjectURL(file);
+    var bar = document.createElement('div'); bar.className = 'bar';
+    var fill = document.createElement('span'); bar.appendChild(fill);
+    var badge = document.createElement('span'); badge.className = 'badge';
+    badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    var retry = document.createElement('button');
+    retry.type = 'button'; retry.className = 'retry'; retry.textContent = 'No se subió. Toca para reintentar';
+    tile.appendChild(img); tile.appendChild(bar); tile.appendChild(badge); tile.appendChild(retry);
+    grid.insertBefore(tile, grid.firstChild);
+    var trabajo = {file: file, tile: tile, fill: fill};
+    retry.addEventListener('click', function(){
+      tile.className = 'tile uploading'; fill.style.width = '0';
+      cola.push(trabajo); siguiente();
+    });
+    cola.push(trabajo);
+    siguiente();
+  }
+
+  function siguiente(){
+    if (ocupado || !cola.length) return;
+    ocupado = true;
+    var t = cola.shift();
+    var pendientes = cola.length;
+    aviso(pendientes ? 'Subiendo tus fotos… faltan ' + (pendientes + 1) : 'Subiendo tu foto…');
+    t.fill.style.width = '15%';
+    comprimir(t.file).then(function(dataUrl){
+      t.fill.style.width = '55%';
+      var lento = setTimeout(function(){ t.fill.style.width = '85%'; }, 1500);
+      return subirConReintento(dataUrl, nameEl.value.trim()).then(
+        function(r){ clearTimeout(lento); return r; },
+        function(e){ clearTimeout(lento); throw e; });
+    }).then(function(){
+      t.fill.style.width = '100%';
+      t.tile.className = 'tile done';
+      saved++; actualizarConteo();
+      var n = nameEl.value.trim();
+      if (!cola.length) aviso(n ? '¡Gracias, ' + n + '! Tu foto quedó guardada.' : '¡Listo! Tu foto quedó guardada.', 'ok');
+    }).catch(function(){
+      t.tile.className = 'tile failed';
+      aviso('Una foto no se pudo subir. Revisa tu conexión y tócala para intentar de nuevo.', 'bad');
+    }).then(function(){
+      ocupado = false; siguiente();
+    });
+  }
+
+  /* Dirección del Apps Script que guarda las fotos en Drive */
+  var URL_GUARDAR = 'https://script.google.com/macros/s/AKfycbx_hVd5Wn6589pbAMX_RHDjkcbCQe7wuEBxpGE1689Uto_1Hyqp23GnmDSX1Y3u3Ui3/exec';
+  function subir(dataUrl, nombre){
+    if (window.google && google.script && google.script.run) {
+      return new Promise(function(ok, falla){
+        google.script.run.withSuccessHandler(ok).withFailureHandler(falla).subirFoto(dataUrl, nombre);
+      });
+    }
+    return fetch(URL_GUARDAR, {method: 'POST', body: JSON.stringify({foto: dataUrl, nombre: nombre})})
+      .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(j){ if (!j || !j.ok) throw new Error((j && j.error) || 'Sin respuesta'); return true; });
+  }
+  function subirConReintento(dataUrl, nombre){
+    return subir(dataUrl, nombre).catch(function(){
+      return new Promise(function(r){ setTimeout(r, 2000); }).then(function(){ return subir(dataUrl, nombre); });
+    });
+  }
+
+  /* Reduce la foto a máximo 2560 px para que suba rápido aunque haya poca señal */
+  function comprimir(file){
+    return new Promise(function(resolve){
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function(){
+        try {
+          var max = 2560, w = img.naturalWidth, h = img.naturalHeight;
+          var k = Math.min(1, max/Math.max(w, h));
+          var c = document.createElement('canvas');
+          c.width = Math.round(w*k); c.height = Math.round(h*k);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          URL.revokeObjectURL(url);
+          resolve(c.toDataURL('image/jpeg', 0.86));
+        } catch (e) { leerOriginal(); }
+      };
+      img.onerror = leerOriginal;
+      function leerOriginal(){
+        var r = new FileReader();
+        r.onload = function(){ resolve(r.result); };
+        r.readAsDataURL(file);
+      }
+      img.src = url;
+    });
+  }
+})();
+</script>
+</body>
+</html>
